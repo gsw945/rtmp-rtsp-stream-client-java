@@ -128,6 +128,7 @@ open class CommandsManager {
     get() = vps?.encodeToString() ?: ""
 
   private fun addHeaders(): String {
+    Log.e(TAG, "addHeaders() - sessionId: [${CommandParser.repr(sessionId)}]")
     return "CSeq: ${++cSeq}\r\n" +
         "User-Agent: ${BuildConfig.LIBRARY_PACKAGE_NAME} ${BuildConfig.VERSION_NAME}\r\n" +
         (if (sessionId == null) "" else "Session: $sessionId\r\n") +
@@ -243,7 +244,9 @@ open class CommandsManager {
       commandParser.parseCommand(response)
     } else {
       val command = commandParser.parseResponse(method, response)
+      Log.e(CommandsManager.TAG, "[${method}] getResponse() - command.text: [${command.text}]")
       sessionId = commandParser.getSessionId(command)
+      Log.e(CommandsManager.TAG, "[${method}] getResponse() - sessionId: [${CommandParser.repr(sessionId)}]")
       if (command.method == Method.SETUP && protocol == Protocol.UDP) {
         commandParser.loadServerPorts(command, protocol, audioClientPorts, videoClientPorts,
           audioServerPorts, videoServerPorts)

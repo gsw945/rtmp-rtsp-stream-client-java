@@ -27,6 +27,23 @@ class CommandParser {
 
   companion object {
     private const val TAG = "CommandParser"
+
+    fun escapeChar(c: Char): String =
+      when (c) {
+        '\t' -> "\\t"
+        '\b' -> "\\b"
+        '\n' -> "\\n"
+        '\r' -> "\\r"
+        '"' -> "\\\""
+        '\\' -> "\\\\"
+        '\$' -> "\\\$"
+        in ' '..'~' -> c.toString()
+        else -> "\\u" + c.toInt().toString(16).padStart(4, '0')
+      }
+    @JvmStatic
+    fun repr(s: String?): String {
+      return "\"${s?.map(::escapeChar)?.joinToString("")}\""
+    }
   }
 
   fun loadServerPorts(command: Command, protocol: Protocol, audioClientPorts: IntArray,
@@ -57,7 +74,9 @@ class CommandParser {
   }
 
   fun getSessionId(command: Command): String {
+    Log.e(CommandParser.TAG, "getSessionId() - Command.text: [${CommandParser.repr(command.text)}]")
     var sessionId = ""
+    // val rtspPattern = Pattern.compile("Session:(\\s?[^;\\n]+)")
     val rtspPattern = Pattern.compile("Session:(\\s?[^;]+)")
     val matcher = rtspPattern.matcher(command.text)
     if (matcher.find()) {
